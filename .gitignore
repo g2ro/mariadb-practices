@@ -1,0 +1,10 @@
+## maven,  maven output
+**/target/
+**/build/
+**/out/
+
+## eclipse
+**/.settings
+**/.classpath
+**/.project
+**/.DS_Store
