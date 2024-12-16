@@ -23,14 +23,18 @@ public class CategoryDao {
 		try {
 			conn = getConnection();
 			
-			String sql = "insert into category values (null, ?)";
+			String sql = 
+					"INSERT INTO category " +
+					"VALUES (null, ?) ";
 			pstmt = conn.prepareStatement(sql);
 			
 			pstmt.setString(1, vo.getName());
 			
 			int count = pstmt.executeUpdate();
 			
-			String setIdSql = "select last_insert_id() from dual";
+			String setIdSql = 
+					"SELECT last_insert_id() " +
+					"FROM dual ";
 			pstmt2 = conn.prepareStatement(setIdSql);
 			
 			rs = pstmt2.executeQuery();
@@ -54,28 +58,11 @@ public class CategoryDao {
 					conn.close();
 				}
 			} catch(SQLException e) {
-				e.printStackTrace();
+				System.out.println("error:" + e);
 			}
 		}
 		return result;
 	}
-
-	
-	private Connection getConnection() throws SQLException {
-		Connection conn = null;
-
-		try {
-			Class.forName("org.mariadb.jdbc.Driver");
-
-			String url = "jdbc:mariadb://192.168.64.3:3306/bookmall";
-			conn = DriverManager.getConnection(url, "bookmall", "bookmall");
-		} catch (ClassNotFoundException e) {
-			System.out.println("드라이버 로딩 실패: " + e);
-		}
-		
-		return conn;
-	}
-
 
 	public List<CategoryVo> findAll() {
 		List<CategoryVo> result = new ArrayList<>();
@@ -84,7 +71,9 @@ public class CategoryDao {
 		ResultSet rs = null;
 		try {
 			conn = getConnection();
-			String sql = "select no, name from category";
+			String sql = 
+					"SELECT no, name " + 
+					"FROM category ";
 			pstmt = conn.prepareStatement(sql);
 			
 			rs = pstmt.executeQuery();
@@ -109,7 +98,7 @@ public class CategoryDao {
 					conn.close();
 				}
 			} catch(SQLException e) {
-				e.printStackTrace();
+				System.out.println("error:" + e);
 			}
 		}
 		return result;
@@ -139,10 +128,25 @@ public class CategoryDao {
 					conn.close();
 				}
 			} catch (SQLException e) {
-				e.printStackTrace();
+				System.out.println("error:" + e);
 			}
 		}
 		
+	}
+	
+	private Connection getConnection() throws SQLException {
+		Connection conn = null;
+
+		try {
+			Class.forName("org.mariadb.jdbc.Driver");
+
+			String url = "jdbc:mariadb://192.168.64.3:3306/bookmall";
+			conn = DriverManager.getConnection(url, "bookmall", "bookmall");
+		} catch (ClassNotFoundException e) {
+			System.out.println("드라이버 로딩 실패: " + e);
+		}
+		
+		return conn;
 	}
 
 }

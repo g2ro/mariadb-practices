@@ -22,7 +22,9 @@ public class UserDao {
 		try {
 			conn = getConnection();
 
-			String sql = "insert into user values (null, ?, ?, ?, ?)";
+			String sql = 
+					"INSERT INTO user " +
+					"VALUES (null, ?, ?, ?, ?)";
 			pstmt = conn.prepareStatement(sql);
 
 			pstmt.setString(1, vo.getName());
@@ -56,7 +58,7 @@ public class UserDao {
 					conn.close();
 				}
 			} catch (SQLException e) {
-				e.printStackTrace();
+				System.out.println("error:" + e);
 			}
 		}
 		return result;
@@ -69,7 +71,9 @@ public class UserDao {
 		ResultSet rs = null;
 		try {
 			conn = getConnection();
-			String sql = "select no, name, email, password, phonenumber from user;";
+			String sql = 
+					"SELECT no, name, email, password, phonenumber " + 
+					"FROM user;";
 			pstmt = conn.prepareStatement(sql);
 
 			rs = pstmt.executeQuery();
@@ -99,7 +103,7 @@ public class UserDao {
 					conn.close();
 				}
 			} catch (SQLException e) {
-				e.printStackTrace();
+				System.out.println("error:" + e);
 			}
 		}
 		return result;
@@ -111,7 +115,9 @@ public class UserDao {
 
 		try {
 			conn = getConnection();
-			String sql = "DELETE FROM user " + "WHERE no = ? ";
+			String sql = 
+					"DELETE FROM user " + 
+					"WHERE no = ? ";
 
 			pstmt = conn.prepareStatement(sql);
 			pstmt.setLong(1, user_no);
@@ -119,7 +125,7 @@ public class UserDao {
 			pstmt.executeUpdate();
 
 		} catch (SQLException e) {
-			e.printStackTrace();
+			System.out.println("error:" + e);
 		} finally {
 			try {
 				if (pstmt != null) {
@@ -129,7 +135,7 @@ public class UserDao {
 					conn.close();
 				}
 			} catch (SQLException e) {
-				e.printStackTrace();
+				System.out.println("error:" + e);
 			}
 		}
 	}

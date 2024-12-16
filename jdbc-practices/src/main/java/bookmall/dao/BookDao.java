@@ -20,7 +20,9 @@ public class BookDao {
 		try {
 			conn = getConnection();
 			
-			String sql = "insert into book values (null, ?,?,?)";
+			String sql = 
+					"INSERT INTO book " + 
+					"VALUES (null, ?,?,?)";
 			pstmt = conn.prepareStatement(sql);
 			
 			pstmt.setLong(1, vo.getCategoryNo());
@@ -29,7 +31,9 @@ public class BookDao {
 			System.out.println(vo);
 			int count = pstmt.executeUpdate();
 
-			String setIdSql = "select last_insert_id() from dual";
+			String setIdSql = 
+					"SELECT last_insert_id() " +
+					"FROM dual ";
 			pstmt2 = conn.prepareStatement(setIdSql);
 			
 			rs = pstmt2.executeQuery();
@@ -53,7 +57,7 @@ public class BookDao {
 					conn.close();
 				}
 			} catch(SQLException e) {
-				e.printStackTrace();
+				System.out.println("error :" + e);
 			}
 		}
 		return result;		
@@ -82,7 +86,7 @@ public class BookDao {
 					conn.close();
 				}
 			} catch (SQLException e) {
-				e.printStackTrace();
+				System.out.println("error : " + e);
 			}
 		}
 		

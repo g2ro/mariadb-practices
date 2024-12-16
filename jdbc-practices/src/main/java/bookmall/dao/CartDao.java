@@ -52,7 +52,9 @@ public class CartDao {
 			
 			int count = pstmt.executeUpdate();
 			
-			String setIdSql = "select last_insert_id() from dual";
+			String setIdSql = 
+					"SELECT last_insert_id() " +
+					"FROM dual ";
 			pstmt2 = conn.prepareStatement(setIdSql);
 			
 			rs = pstmt2.executeQuery();
@@ -80,7 +82,7 @@ public class CartDao {
 					conn.close();
 				}
 			} catch(SQLException e) {
-				e.printStackTrace();
+				System.out.println("error:" + e);
 			}
 		}
 		return result;
@@ -97,7 +99,7 @@ public class CartDao {
 				"SELECT c.no, c.user_no, c.book_no, c.quantity, b.title " +
 				"FROM cart c " +
 				"	JOIN book b ON(c.book_no = b.no) " +
-				 "WHERE c.user_no = ? ";
+				"WHERE c.user_no = ? ";
 			pstmt = conn.prepareStatement(sql);
 			pstmt.setLong(1, user_no);
 			
@@ -130,7 +132,7 @@ public class CartDao {
 					conn.close();
 				}
 			} catch (SQLException e) {
-				e.printStackTrace();
+				System.out.println("error:" + e);
 			}
 		}
 		return result;
@@ -162,7 +164,7 @@ public class CartDao {
 					conn.close();
 				}
 			} catch(SQLException e) {
-				e.printStackTrace();
+				System.out.println("error :" + e);
 			}
 		}
 		
