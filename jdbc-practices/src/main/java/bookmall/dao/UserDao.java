@@ -15,67 +15,50 @@ public class UserDao {
 
 	public Boolean insert(UserVo vo) {
 		boolean result = false;
-		Connection conn = null;
-		PreparedStatement pstmt = null;
-		PreparedStatement pstmt2 = null;
+		
 		ResultSet rs = null;
-		try {
-			conn = getConnection();
-
-			String sql = 
-					"INSERT INTO user " +
-					"VALUES (null, ?, ?, ?, ?)";
-			pstmt = conn.prepareStatement(sql);
-
+		try (
+				Connection conn = getConnection();
+				PreparedStatement pstmt = conn.prepareStatement(
+						"INSERT INTO user " +
+						"VALUES (null, ?, ?, ?, ?)");
+				
+				PreparedStatement pstmt2 = conn.prepareStatement(
+						"SELECT last_insert_id() " +
+						"FROM dual");
+				){
 			pstmt.setString(1, vo.getName());
 			pstmt.setString(2, vo.getEmail());
 			pstmt.setString(3, vo.getPassword());
 			pstmt.setString(4, vo.getPhoneNumber());
 			int count = pstmt.executeUpdate();
 
-			String setIdSql = "select last_insert_id() from dual";
-			pstmt2 = conn.prepareStatement(setIdSql);
 
 			rs = pstmt2.executeQuery();
 			while (rs.next()) {
 				Long id = rs.getLong(1);
 				vo.setNo(id);
 			}
-
+			rs.close();
+			
 			result = count == 1;
 
 		} catch (SQLException e) {
 			System.out.println("드라이버 로딩 실패: " + e);
-		} finally {
-			try {
-				if (pstmt != null) {
-					pstmt.close();
-				}
-				if (pstmt2 != null) {
-					pstmt2.close();
-				}
-				if (conn != null) {
-					conn.close();
-				}
-			} catch (SQLException e) {
-				System.out.println("error:" + e);
-			}
 		}
 		return result;
 	}
 
 	public List<UserVo> findAll() {
 		List<UserVo> result = new ArrayList<>();
-		Connection conn = null;
-		PreparedStatement pstmt = null;
+		
 		ResultSet rs = null;
-		try {
-			conn = getConnection();
-			String sql = 
-					"SELECT no, name, email, password, phonenumber " + 
-					"FROM user;";
-			pstmt = conn.prepareStatement(sql);
-
+		try (
+				Connection conn = getConnection();
+				PreparedStatement pstmt = conn.prepareStatement(
+						"SELECT no, name, email, password, phonenumber " + 
+						"FROM user;");
+				){
 			rs = pstmt.executeQuery();
 			while (rs.next()) {
 				Long no = rs.getLong(1);
@@ -94,50 +77,26 @@ public class UserDao {
 			}
 		} catch (SQLException e) {
 			System.out.println("드라이버 로딩 실패: " + e);
-		} finally {
-			try {
-				if (pstmt != null) {
-					pstmt.close();
-				}
-				if (conn != null) {
-					conn.close();
-				}
-			} catch (SQLException e) {
-				System.out.println("error:" + e);
-			}
-		}
+		} 
 		return result;
 	}
 
 	public void deleteByNo(Long user_no) {
-		Connection conn = null;
-		PreparedStatement pstmt = null;
+		
 
-		try {
-			conn = getConnection();
-			String sql = 
-					"DELETE FROM user " + 
-					"WHERE no = ? ";
-
-			pstmt = conn.prepareStatement(sql);
+		try(
+				Connection conn = getConnection();
+				PreparedStatement pstmt = conn.prepareStatement(
+						"DELETE FROM user " + 
+						"WHERE no = ? ");
+				) {
 			pstmt.setLong(1, user_no);
 
 			pstmt.executeUpdate();
 
 		} catch (SQLException e) {
 			System.out.println("error:" + e);
-		} finally {
-			try {
-				if (pstmt != null) {
-					pstmt.close();
-				}
-				if (conn != null) {
-					conn.close();
-				}
-			} catch (SQLException e) {
-				System.out.println("error:" + e);
-			}
-		}
+		} 	
 	}
 
 	private Connection getConnection() throws SQLException {

@@ -14,20 +14,23 @@ public class CartDao {
 
 	public Boolean insert(CartVo vo) {
 		boolean result = false;
-		Connection conn = null;
-		PreparedStatement pstmt =null;
-		PreparedStatement pstmt2 = null;
-		PreparedStatement pstmt3 = null;
 		ResultSet rs = null;
 		ResultSet rs2 = null;
-		try {
-			conn = getConnection();
-			
-			String titleSql = 
-					"SELECT title, price " +
-					"FROM book " +
-					"WHERE no = ? ";
-			pstmt3 = conn.prepareStatement(titleSql);
+		try (
+				Connection conn = getConnection();
+				PreparedStatement pstmt =conn.prepareStatement(
+						"INSERT INTO cart " +
+						"VALUES (null, ?,?,?,?,?) ");
+				
+				PreparedStatement pstmt2 = conn.prepareStatement(
+						"SELECT last_insert_id() " +
+						"FROM dual ");
+				
+				PreparedStatement pstmt3 = conn.prepareStatement(
+						"SELECT title, price " +
+						"FROM book " +
+						"WHERE no = ? ");
+				){
 			pstmt3.setLong(1, vo.getBookNo());
 			
 			rs2 = pstmt3.executeQuery();
@@ -38,11 +41,7 @@ public class CartDao {
 				vo.setBookTitle(title);
 				vo.setPrice(vo.getQuantity() * price);
 			}
-			
-			String sql = 
-					"INSERT INTO cart " +
-					"VALUES (null, ?,?,?,?,?) ";
-			pstmt = conn.prepareStatement(sql);
+			rs2.close();
 			
 			pstmt.setLong(1, vo.getUserNo());
 			pstmt.setLong(2, vo.getBookNo());
@@ -52,55 +51,33 @@ public class CartDao {
 			
 			int count = pstmt.executeUpdate();
 			
-			String setIdSql = 
-					"SELECT last_insert_id() " +
-					"FROM dual ";
-			pstmt2 = conn.prepareStatement(setIdSql);
-			
 			rs = pstmt2.executeQuery();
 			while(rs.next()) {
 				Long id = rs.getLong(1);
 				vo.setNo(id);
 			}
-
+			rs.close();
+			
 			result = count == 1;
 			
 		} catch(SQLException e) {
 			System.out.println("드라이버 로딩 실패: " + e);
-		} finally {
-			try {
-				if(pstmt != null) {
-					pstmt.close();
-				}
-				if(pstmt2 != null) {
-					pstmt2.close();
-				}
-				if(pstmt3 != null) {
-					pstmt3.close();
-				}
-				if(conn != null) {
-					conn.close();
-				}
-			} catch(SQLException e) {
-				System.out.println("error:" + e);
-			}
 		}
 		return result;
-		
 	}
+	
 	public List<CartVo> findByUserNo(Long user_no) { //return 값 수정 필
 		List<CartVo> result = new ArrayList<>();
-		Connection conn = null;
-		PreparedStatement pstmt = null;
+		
 		ResultSet rs = null;
-		try {
-			conn = getConnection();
-			String sql = 
-				"SELECT c.no, c.user_no, c.book_no, c.quantity, b.title " +
-				"FROM cart c " +
-				"	JOIN book b ON(c.book_no = b.no) " +
-				"WHERE c.user_no = ? ";
-			pstmt = conn.prepareStatement(sql);
+		try (
+				Connection conn = getConnection();
+				PreparedStatement pstmt = conn.prepareStatement(
+						"SELECT c.no, c.user_no, c.book_no, c.quantity, b.title " +
+						"FROM cart c " +
+						"	JOIN book b ON(c.book_no = b.no) " +
+						"WHERE c.user_no = ? ");
+				){
 			pstmt.setLong(1, user_no);
 			
 			rs = pstmt.executeQuery();
@@ -121,53 +98,29 @@ public class CartDao {
 
 				result.add(vo);
 			}
+			rs.close();
 		} catch (SQLException e) {
 			e.printStackTrace();
-		} finally {
-			try {
-				if(pstmt != null) {
-					pstmt.close();
-				}
-				if(conn != null) {
-					conn.close();
-				}
-			} catch (SQLException e) {
-				System.out.println("error:" + e);
-			}
 		}
 		return result;
 	}
 	
 	public void deleteByUserNoAndBookNo(Long userNo, Long bookNo) {
-		Connection conn = null;
-		PreparedStatement pstmt = null;
 		
-		try {
-			conn = getConnection();
-			String sql = 
-					"DELETE FROM cart "+
-					"WHERE user_no = ? " +
-					"	AND book_no = ? ";
-			pstmt = conn.prepareStatement(sql);
+		try (
+				Connection conn = getConnection();
+				PreparedStatement pstmt = conn.prepareStatement(
+						"DELETE FROM cart "+
+						"WHERE user_no = ? " +
+						"	AND book_no = ? ");
+				){
 			pstmt.setLong(1, userNo);
 			pstmt.setLong(2, bookNo);
 			
 			pstmt.executeUpdate();
 		} catch(SQLException e) {
 			e.printStackTrace();
-		} finally {
-			try {
-				if(pstmt != null) {
-					pstmt.close();
-				}
-				if(conn != null) {
-					conn.close();
-				}
-			} catch(SQLException e) {
-				System.out.println("error :" + e);
-			}
-		}
-		
+		} 
 	}
 	
 	private Connection getConnection() throws SQLException {
@@ -184,9 +137,4 @@ public class CartDao {
 		
 		return conn;
 	}
-	
-
-
-
-
 }

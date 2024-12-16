@@ -15,16 +15,17 @@ public class OrderDao {
 
 	public boolean insert(OrderVo vo) {
 		boolean result = false;
-		Connection conn = null;
-		PreparedStatement pstmt = null;
-		PreparedStatement pstmt2 = null;
+		
 		ResultSet rs = null;
-		try {
-			conn = getConnection();
-
-			String sql = "INSERT INTO orders " + "VALUES (null, ?, ?, ?, ?, ?)";
-			pstmt = conn.prepareStatement(sql);
-
+		try (
+				Connection conn = getConnection();
+				PreparedStatement pstmt = conn.prepareStatement(
+						"INSERT INTO orders " + 
+						"VALUES (null, ?, ?, ?, ?, ?)");
+				PreparedStatement pstmt2 = conn.prepareStatement(
+						"SELECT last_insert_id() " +
+						"FROM dual");
+				){
 			pstmt.setLong(1, vo.getUserNo());
 			pstmt.setString(2, vo.getNumber());
 			pstmt.setInt(3, vo.getPayment());
@@ -33,51 +34,41 @@ public class OrderDao {
 
 			int count = pstmt.executeUpdate();
 
-			String setIdSql = "select last_insert_id() from dual";
-			pstmt2 = conn.prepareStatement(setIdSql);
-
 			rs = pstmt2.executeQuery();
 			while (rs.next()) {
 				Long id = rs.getLong(1);
 				vo.setNo(id);
 			}
-
+			
+			rs.close();
 			result = count == 1;
 
 		} catch (SQLException e) {
 			System.out.println("드라이버 로딩 실패: " + e);
-		} finally {
-			try {
-				if (pstmt != null) {
-					pstmt.close();
-				}
-				if (pstmt2 != null) {
-					pstmt2.close();
-				}
-				if (conn != null) {
-					conn.close();
-				}
-			} catch (SQLException e) {
-				System.out.println("error:" + e);
-			}
 		}
 		return result;
-
 	}
 
 	public boolean insertBook(OrderBookVo vo) {
 		boolean result = false;
-		Connection conn = null;
-		PreparedStatement pstmt = null;
-		PreparedStatement pstmt2 = null;
-		PreparedStatement pstmt3 = null;
+		
 		ResultSet rs = null;
 		ResultSet rs2 = null;
-		try {
-			conn = getConnection();
-
-			String titleSql = "SELECT title " + "FROM book " + "WHERE no = ? ";
-			pstmt3 = conn.prepareStatement(titleSql);
+		try (
+				Connection conn = getConnection();
+				PreparedStatement pstmt = conn.prepareStatement(
+						"INSERT INTO orderbook " + 
+						"VALUES(null, ?, ?, ?, ?, ?) ");
+				
+				PreparedStatement pstmt2 = conn.prepareStatement(
+						"SELECT last_insert_id() " +
+						"FROM dual");
+				
+				PreparedStatement pstmt3 = conn.prepareStatement(
+						"SELECT title " + 
+						"FROM book " + 
+						"WHERE no = ? ");
+				){
 			pstmt3.setLong(1, vo.getBookNo());
 
 			rs2 = pstmt3.executeQuery();
@@ -86,9 +77,7 @@ public class OrderDao {
 				String title = rs2.getString(1);
 				vo.setBookTitle(title);
 			}
-
-			String sql = "INSERT INTO orderbook " + "VALUES(null, ?, ?, ?, ?, ?) ";
-			pstmt = conn.prepareStatement(sql);
+			rs2.close();
 
 			pstmt.setLong(1, vo.getOrderNo());
 			pstmt.setLong(2, vo.getBookNo());
@@ -98,9 +87,6 @@ public class OrderDao {
 
 			int count = pstmt.executeUpdate();
 
-			String setIdSql = "select last_insert_id() from dual";
-			pstmt2 = conn.prepareStatement(setIdSql);
-
 			rs = pstmt2.executeQuery();
 			while (rs.next()) {
 				Long id = rs.getLong(1);
@@ -111,34 +97,22 @@ public class OrderDao {
 
 		} catch (SQLException e) {
 			System.out.println("드라이버 로딩 실패: " + e);
-		} finally {
-			try {
-				if (pstmt != null) {
-					pstmt.close();
-				}
-				if (pstmt2 != null) {
-					pstmt2.close();
-				}
-				if (conn != null) {
-					conn.close();
-				}
-			} catch (SQLException e) {
-				System.out.println("error:" + e);
-			}
-		}
+		} 
 		return result;
 	}
 
 	public OrderVo findByNoAndUserNo(long orderNo, Long user_no) {
-		Connection conn = null;
-		PreparedStatement pstmt = null;
+		
 		ResultSet rs = null;
 		OrderVo result = null;
-		try {
-			conn = getConnection();
-			String sql = "SELECT no, user_no, payment, shipping, status, number " + "FROM orders " + "WHERE no = ? "
-					+ "	AND user_no = ? ";
-			pstmt = conn.prepareStatement(sql);
+		try (
+				Connection conn = getConnection();
+				PreparedStatement pstmt = conn.prepareStatement(
+						"SELECT no, user_no, payment, shipping, status, number " + 
+						"FROM orders " + 
+						"WHERE no = ? " + 
+						"	AND user_no = ? ");
+				){
 			pstmt.setLong(1, orderNo);
 			pstmt.setLong(2, user_no);
 
@@ -159,41 +133,29 @@ public class OrderDao {
 				result.setShipping(shipping);
 				result.setStatus(status);
 				result.setNumber(number);
-
 			}
+			rs.close();
 		} catch (SQLException e) {
 			System.out.println("error:" + e);
-		} finally {
-			try {
-				if (pstmt != null) {
-					pstmt.close();
-				}
-				if (conn != null) {
-					conn.close();
-				}
-			} catch (SQLException e) {
-				System.out.println("error:" + e);
-			}
-		}
+		} 
 		return result;
 	}
 
 	public List<OrderBookVo> findBooksByNoAndUserNo(Long order_no, Long user_no) {
-		Connection conn = null;
-		PreparedStatement pstmt = null;
+		
 		ResultSet rs = null;
 		List<OrderBookVo> result = new ArrayList<>();
-		try {
-			conn = getConnection();
-			String sql = 
+		try (
+				Connection conn = getConnection();
+				PreparedStatement pstmt = conn.prepareStatement(
 					"SELECT o.no, o.orders_no, o.book_no, o.booktitle, o.quantity, o.price " + 
 					"FROM orderbook o " +
 					"	JOIN book b ON (o.book_no = b.no) " + 
 					"   JOIN cart c ON (c.book_no = o.book_no) " +
 					"    JOIN user u ON (c.user_no = u.no) " + 
 					"WHERE o.orders_no = ? " + 
-					"	AND u.no = ? ";
-			pstmt = conn.prepareStatement(sql);
+					"	AND u.no = ? ");
+				){
 			pstmt.setLong(1, order_no);
 			pstmt.setLong(2, user_no);
 
@@ -217,79 +179,41 @@ public class OrderDao {
 
 				result.add(vo);
 			}
-
+			rs.close();
 		} catch (SQLException e) {
 			System.out.println("error:" + e);
-		} finally {
-			try {
-				if (pstmt != null) {
-					pstmt.close();
-				}
-				if (conn != null) {
-					conn.close();
-				}
-			} catch (SQLException e) {
-				System.out.println("error:" + e);
-			}
-		}
-
+		} 
 		return result;
 	}
 
 	public void deleteBooksByNo(Long no) {
-		Connection conn = null;
-		PreparedStatement pstmt = null;
-
-		try {
-			conn = getConnection();
-			String sql = "DELETE FROM orderbook " + "WHERE orders_no = ? ";
-			pstmt = conn.prepareStatement(sql);
+		try (
+				Connection conn = getConnection();
+				PreparedStatement pstmt = conn.prepareStatement(
+						"DELETE FROM orderbook " + 
+						"WHERE orders_no = ? ");
+				){
 			pstmt.setLong(1, no);
 
 			pstmt.executeUpdate();
 		} catch (SQLException e) {
 			e.printStackTrace();
-		} finally {
-			try {
-				if (pstmt != null) {
-					pstmt.close();
-				}
-				if (conn != null) {
-					conn.close();
-				}
-			} catch (SQLException e) {
-				System.out.println("error:" + e);
-			}
-		}
-
+		} 
 	}
 
 	public void deleteByNo(Long no) {
-		Connection conn = null;
-		PreparedStatement pstmt = null;
-		try {
-			conn = getConnection();
-			String sql = "DELETE FROM orders " + "WHERE no = ? ";
-			pstmt = conn.prepareStatement(sql);
-
+		try (
+				Connection conn = getConnection();
+				PreparedStatement pstmt = conn.prepareStatement(
+						"DELETE FROM orders " + 
+						"WHERE no = ? ");
+				){
 			pstmt.setLong(1, no);
 			pstmt.executeUpdate();
 
 		} catch (SQLException e) {
 			e.printStackTrace();
-		} finally {
-			try {
-				if (pstmt != null) {
-					pstmt.close();
-				}
-				if (conn != null) {
-					conn.close();
-				}
-			} catch (SQLException e) {
-				System.out.println("error:" + e);
-			}
-		}
-
+		} 
 	}
 
 	private Connection getConnection() throws SQLException {
