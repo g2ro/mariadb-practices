@@ -52,17 +52,12 @@ public class OrderDao {
 	public boolean insertBook(OrderBookVo vo) {
 		boolean result = false;
 		
-		ResultSet rs = null;
 		ResultSet rs2 = null;
 		try (
 				Connection conn = getConnection();
 				PreparedStatement pstmt = conn.prepareStatement(
 						"INSERT INTO orderbook " + 
-						"VALUES(null, ?, ?, ?, ?, ?) ");
-				
-				PreparedStatement pstmt2 = conn.prepareStatement(
-						"SELECT last_insert_id() " +
-						"FROM dual");
+						"VALUES(?, ?, ?, ?, ?) ");
 				
 				PreparedStatement pstmt3 = conn.prepareStatement(
 						"SELECT title " + 
@@ -86,12 +81,6 @@ public class OrderDao {
 			pstmt.setInt(5, vo.getPrice());
 
 			int count = pstmt.executeUpdate();
-
-			rs = pstmt2.executeQuery();
-			while (rs.next()) {
-				Long id = rs.getLong(1);
-				vo.setNo(id);
-			}
 
 			result = count == 1;
 
@@ -148,7 +137,7 @@ public class OrderDao {
 		try (
 				Connection conn = getConnection();
 				PreparedStatement pstmt = conn.prepareStatement(
-					"SELECT o.no, o.orders_no, o.book_no, o.booktitle, o.quantity, o.price " + 
+					"SELECT o.orders_no, o.book_no, o.booktitle, o.quantity, o.price " + 
 					"FROM orderbook o " +
 					"	JOIN book b ON (o.book_no = b.no) " + 
 					"   JOIN cart c ON (c.book_no = o.book_no) " +
@@ -162,15 +151,13 @@ public class OrderDao {
 			rs = pstmt.executeQuery();
 
 			while (rs.next()) {
-				Long no = rs.getLong(1);
-				Long orderNo = rs.getLong(2);
-				Long bookNo = rs.getLong(3);
-				String booktitle = rs.getString(4);
-				int quantity = rs.getInt(5);
-				int price = rs.getInt(6);
+				Long orderNo = rs.getLong(1);
+				Long bookNo = rs.getLong(2);
+				String booktitle = rs.getString(3);
+				int quantity = rs.getInt(4);
+				int price = rs.getInt(5);
 
 				OrderBookVo vo = new OrderBookVo();
-				vo.setNo(no);
 				vo.setOrderNo(orderNo);
 				vo.setBookNo(bookNo);
 				vo.setBookTitle(booktitle);

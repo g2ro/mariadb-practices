@@ -14,17 +14,12 @@ public class CartDao {
 
 	public Boolean insert(CartVo vo) {
 		boolean result = false;
-		ResultSet rs = null;
 		ResultSet rs2 = null;
 		try (
 				Connection conn = getConnection();
 				PreparedStatement pstmt =conn.prepareStatement(
 						"INSERT INTO cart " +
-						"VALUES (null, ?,?,?,?,?) ");
-				
-				PreparedStatement pstmt2 = conn.prepareStatement(
-						"SELECT last_insert_id() " +
-						"FROM dual ");
+						"VALUES (?,?,?,?,?) ");
 				
 				PreparedStatement pstmt3 = conn.prepareStatement(
 						"SELECT title, price " +
@@ -51,13 +46,6 @@ public class CartDao {
 			
 			int count = pstmt.executeUpdate();
 			
-			rs = pstmt2.executeQuery();
-			while(rs.next()) {
-				Long id = rs.getLong(1);
-				vo.setNo(id);
-			}
-			rs.close();
-			
 			result = count == 1;
 			
 		} catch(SQLException e) {
@@ -73,7 +61,7 @@ public class CartDao {
 		try (
 				Connection conn = getConnection();
 				PreparedStatement pstmt = conn.prepareStatement(
-						"SELECT c.no, c.user_no, c.book_no, c.quantity, b.title " +
+						"SELECT c.user_no, c.book_no, c.quantity, b.title " +
 						"FROM cart c " +
 						"	JOIN book b ON(c.book_no = b.no) " +
 						"WHERE c.user_no = ? ");
@@ -82,15 +70,13 @@ public class CartDao {
 			
 			rs = pstmt.executeQuery();
 			while(rs.next()) {
-				Long no = rs.getLong(1);
-				Long userNo = rs.getLong(2);
-				Long bookNo = rs.getLong(3);
-				int quantity = rs.getInt(4);
-				String bookTitle = rs.getString(5);
+				Long userNo = rs.getLong(1);
+				Long bookNo = rs.getLong(2);
+				int quantity = rs.getInt(3);
+				String bookTitle = rs.getString(4);
 				
 		
 				CartVo vo = new CartVo();
-				vo.setNo(no);
 				vo.setUserNo(userNo);
 				vo.setBookNo(bookNo);
 				vo.setBookTitle(bookTitle);

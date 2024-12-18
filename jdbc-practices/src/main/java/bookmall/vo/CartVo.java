@@ -1,20 +1,12 @@
 package bookmall.vo;
 
 public class CartVo {
-	private Long no;
 	private Long userNo;
 	private Long bookNo;
 	private String bookTitle;
 	private int quantity;
 	private int price;
 	
-	
-	public Long getNo() {
-		return no;
-	}
-	public void setNo(Long no) {
-		this.no = no;
-	}
 	public Long getUserNo() {
 		return userNo;
 	}
